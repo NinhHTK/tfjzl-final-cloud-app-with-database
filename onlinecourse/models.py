@@ -6,9 +6,7 @@ except Exception:
     print("There was an error loading django modules. Do you have django installed?")
     sys.exit()
 from django.conf import settings
-import uuid
 
-# Instructor model
 class Instructor(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     full_time = models.BooleanField(default=True)
@@ -17,7 +15,6 @@ class Instructor(models.Model):
     def __str__(self):
         return self.user.username
 
-# Learner model
 class Learner(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     STUDENT = 'student'
@@ -36,7 +33,6 @@ class Learner(models.Model):
     def __str__(self):
         return self.user.username + "," + self.occupation
 
-# Course model
 class Course(models.Model):
     name = models.CharField(null=False, max_length=30, default='online course')
     image = models.ImageField(upload_to='course_images/')
@@ -45,12 +41,10 @@ class Course(models.Model):
     instructors = models.ManyToManyField(Instructor)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, through='Enrollment')
     total_enrollment = models.IntegerField(default=0)
-    is_enrolled = False
 
     def __str__(self):
         return "Name: " + self.name + "," + "Description: " + self.description
 
-# Lesson model
 class Lesson(models.Model):
     title = models.CharField(max_length=200, default="title")
     order = models.IntegerField(default=0)
@@ -60,7 +54,6 @@ class Lesson(models.Model):
     def __str__(self):
         return self.title
 
-# Enrollment model
 class Enrollment(models.Model):
     AUDIT = 'audit'
     HONOR = 'honor'
@@ -76,7 +69,6 @@ class Enrollment(models.Model):
     mode = models.CharField(max_length=5, choices=COURSE_MODES, default=AUDIT)
     rating = models.FloatField(default=5.0)
 
-# Question model
 class Question(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     question_text = models.CharField(max_length=600)
@@ -86,7 +78,7 @@ class Question(models.Model):
         return self.question_text
 
     def is_get_score(self, selected_ids):
-        # Ép kiểu toàn bộ selected_ids sang int để khớp với id trong DB
+        # Ép kiểu danh sách ID nhận từ form sang int để so sánh chính xác với DB
         selected_ids = [int(x) for x in selected_ids]
         all_answers = self.choice_set.filter(is_correct=True).count()
         selected_correct = self.choice_set.filter(is_correct=True, id__in=selected_ids).count()
@@ -96,7 +88,6 @@ class Question(models.Model):
             return True
         return False
 
-# Choice model
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     choice_text = models.CharField(max_length=500)
@@ -105,7 +96,6 @@ class Choice(models.Model):
     def __str__(self):
         return self.choice_text
 
-# Submission model
 class Submission(models.Model):
     enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
     choices = models.ManyToManyField(Choice)
