@@ -30,12 +30,7 @@ class Learner(models.Model):
         (DATA_SCIENTIST, 'Data Scientist'),
         (DATABASE_ADMIN, 'Database Admin')
     ]
-    occupation = models.CharField(
-        null=False,
-        max_length=20,
-        choices=OCCUPATION_CHOICES,
-        default=STUDENT
-    )
+    occupation = models.CharField(null=False, max_length=20, choices=OCCUPATION_CHOICES, default=STUDENT)
     social_link = models.URLField(max_length=200)
 
     def __str__(self):
@@ -62,6 +57,9 @@ class Lesson(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     content = models.TextField()
 
+    def __str__(self):
+        return self.title
+
 # Enrollment model
 class Enrollment(models.Model):
     AUDIT = 'audit'
@@ -78,32 +76,36 @@ class Enrollment(models.Model):
     mode = models.CharField(max_length=5, choices=COURSE_MODES, default=AUDIT)
     rating = models.FloatField(default=5.0)
 
-# --- CÁC MODEL CHO QUESTION 1 ---
-
+# Question model
 class Question(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    content = models.CharField(max_length=600)
+    question_text = models.CharField(max_length=600)
     grade = models.IntegerField(default=1)
 
     def __str__(self):
-        return self.content
+        return self.question_text
 
     def is_get_score(self, selected_ids):
+        # Ép kiểu toàn bộ selected_ids sang int để khớp với id trong DB
+        selected_ids = [int(x) for x in selected_ids]
         all_answers = self.choice_set.filter(is_correct=True).count()
         selected_correct = self.choice_set.filter(is_correct=True, id__in=selected_ids).count()
         selected_wrong = self.choice_set.filter(is_correct=False, id__in=selected_ids).count()
+        
         if all_answers == selected_correct and selected_wrong == 0:
             return True
         return False
 
+# Choice model
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    content = models.CharField(max_length=500)
+    choice_text = models.CharField(max_length=500)
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.content
+        return self.choice_text
 
+# Submission model
 class Submission(models.Model):
     enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
     choices = models.ManyToManyField(Choice)
